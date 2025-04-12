@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonInput, IonButton, IonList, IonItem, IonLabel } from '@ionic/react';
 import { useHistory } from 'react-router-dom';
-
 import '@ionic/react/css/core.css';
 
 /* Basic CSS for apps built with Ionic */
@@ -24,7 +23,7 @@ const Login: React.FC = () => {
 
 const handleSubmit = () => {
   if (username === "aviasnani" && password === "helloWorld"){
-    history.push('tabs/home');
+    history.push('/tabs/home');
 
   }else{
     alert("Invalid credentials");

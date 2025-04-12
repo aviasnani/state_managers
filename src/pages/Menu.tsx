@@ -8,6 +8,7 @@ import {
     IonMenu,
     IonMenuToggle,
     IonNote,
+    IonToggle
   } from '@ionic/react';
   import {
     homeOutline,
@@ -15,6 +16,9 @@ import {
     bookOutline,
     logOutOutline,
     mapOutline,
+    logInOutline,
+    personAddOutline,
+    moonOutline,
   } from 'ionicons/icons';
   import { useLocation } from 'react-router-dom';
   import './Menu.css';
@@ -63,7 +67,6 @@ import {
                     routerLink={appPage.url} 
                     routerDirection="none" 
                     lines="none" 
-                    detail={false}
                   >
                     <IonIcon slot="start" icon={appPage.icon} />
                     <IonLabel>{appPage.title}</IonLabel>
@@ -74,12 +77,23 @@ import {
           </IonList>
           <IonList>
             <IonListHeader>Account</IonListHeader>
-            <IonMenuToggle>
-                <IonItem>
-                    <IonIcon/>
+            <IonMenuToggle autoHide={false}>
+                <IonItem routerLink="/login" routerDirection="root" lines='none'>
+                    <IonIcon slot="start" icon={logInOutline}/>
                     <IonLabel>Login</IonLabel>
                 </IonItem>
             </IonMenuToggle>
+            <IonMenuToggle autoHide={false}>
+                <IonItem routerLink='/signup' routerDirection='root' lines='none'>
+                    <IonIcon slot='start' icon={personAddOutline}/>
+                    <IonLabel>Sign Up</IonLabel>
+                </IonItem>
+            </IonMenuToggle>
+            <IonItem lines='none'>
+                <IonIcon slot='start' icon={moonOutline} />
+                <IonLabel>Dark Mode</IonLabel>
+                <IonToggle slot="end" />
+            </IonItem>
           </IonList>
         </IonContent>
       </IonMenu>

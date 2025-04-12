@@ -5,13 +5,15 @@ import Login from './pages/Login';
 import Home from './pages/Home';
 import Camera from './pages/Camera';
 import Journal from './pages/Journal';
+import Map from './pages/Map';
 import Menu from './pages/Menu';
+import SignUp from './pages/SignUp';
+
 import { 
   camera,          
   images,          
   journal,         
-  home,          
-  location,       
+  map,   
 
 } from 'ionicons/icons';
 
@@ -26,7 +28,7 @@ const App: React.FC = () => {
       <IonRouterOutlet>
        
         <Route  path="/login" component={Login} exact />
-        
+        <Route path="/signup" component={SignUp} exact />
         <Route path="/tabs" render={() => (
           <IonSplitPane contentId="main">  {/**do not reverse order of ionsplitpane and routeroulet as first is parent */}
              <Menu /> 
@@ -36,6 +38,7 @@ const App: React.FC = () => {
                 <Route exact path="/tabs/home" component={Home} />
                 <Route exact path="/tabs/camera" component={Camera} />
                 <Route exact path="/tabs/journal" component={Journal} />
+                <Route exact path="/tabs/map" component={Map} />
                 <Redirect exact from="/tabs" to="/tabs/home" />
               </IonRouterOutlet>
 
@@ -54,13 +57,20 @@ const App: React.FC = () => {
                   <IonIcon icon={journal} />
                   <IonLabel>Journal</IonLabel>
                 </IonTabButton>
+
+                <IonTabButton tab="map" href="/tabs/map">
+                      <IonIcon icon={map} />
+                      <IonLabel>Map</IonLabel>
+                    </IonTabButton>
+
+
               </IonTabBar>
             </IonTabs>
             </IonRouterOutlet>
             </IonSplitPane>
           )} />
 
-          <Redirect exact from ="/" to ="/tabs/home" />
+          <Redirect exact from="/" to="/login" />
 
       </IonRouterOutlet>
     </IonReactRouter>

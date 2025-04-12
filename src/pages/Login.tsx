@@ -2,6 +2,21 @@ import React, { useState } from 'react';
 import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonInput, IonButton, IonList, IonItem, IonLabel } from '@ionic/react';
 import { useHistory } from 'react-router-dom';
 
+import '@ionic/react/css/core.css';
+
+/* Basic CSS for apps built with Ionic */
+import '@ionic/react/css/normalize.css';
+import '@ionic/react/css/structure.css';
+import '@ionic/react/css/typography.css';
+
+/* Optional CSS utils that can be commented out */
+import '@ionic/react/css/padding.css';
+import '@ionic/react/css/float-elements.css';
+import '@ionic/react/css/text-alignment.css';
+import '@ionic/react/css/text-transformation.css';
+import '@ionic/react/css/flex-utils.css';
+import '@ionic/react/css/display.css';
+
 const Login: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -9,7 +24,7 @@ const Login: React.FC = () => {
 
 const handleSubmit = () => {
   if (username === "aviasnani" && password === "helloWorld"){
-    history.push('/tabs/home');
+    history.push('tabs/home');
 
   }else{
     alert("Invalid credentials");
@@ -28,6 +43,7 @@ return (
         <IonItem>
         <IonLabel position="floating">Username</IonLabel>
        <IonInput
+        type = "text"
         value={username}
         onIonChange={e => setUsername(e.detail.value!)}
         clearInput

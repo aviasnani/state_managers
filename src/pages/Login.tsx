@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonInput, IonButton } from '@ionic/react';
+import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonInput, IonButton, IonList, IonItem, IonLabel } from '@ionic/react';
 import { useHistory } from 'react-router-dom';
 
 const Login: React.FC = () => {
@@ -9,7 +9,7 @@ const Login: React.FC = () => {
 
 const handleSubmit = () => {
   if (username === "aviasnani" && password === "helloWorld"){
-    history.push('/home');
+    history.push('/tabs/home');
 
   }else{
     alert("Invalid credentials");
@@ -24,20 +24,31 @@ return (
       </IonToolbar>
     </IonHeader>
     <IonContent className="ion-padding">
-      <IonInput
+      <IonList>
+        <IonItem>
+        <IonLabel position="floating">Username</IonLabel>
+       <IonInput
         value={username}
-        placeholder="Username"
         onIonChange={e => setUsername(e.detail.value!)}
+        clearInput
       />
+      </IonItem>
+      <IonItem>
+      <IonLabel position="floating">Password</IonLabel>
       <IonInput
-        type="password"
-        value={password}
-        placeholder="Password"
-        onIonChange={e => setPassword(e.detail.value!)}
+         type="password"
+         value={password}
+         onIonChange={e => setPassword(e.detail.value!)}
+         clearInput
       />
+      </IonItem>
+      </IonList>
+
+      <div className="ion-padding">
       <IonButton expand="full" onClick={handleSubmit}>
         Login
       </IonButton>
+      </div>
     </IonContent>
   </IonPage>
 );

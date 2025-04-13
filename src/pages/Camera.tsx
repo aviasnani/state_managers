@@ -1,52 +1,58 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  IonButtons, 
   IonContent, 
-  IonHeader, 
-  IonMenuButton, 
   IonPage, 
-  IonTitle, 
-  IonToolbar,
-  IonButton,
   IonGrid,
   IonRow,
   IonCol,
   IonImg,
   IonCard,
-  IonCardContent
+  IonCardContent,
+  IonFooter,
+  IonToolbar,
+  IonButton,
+  IonIcon,
+  IonHeader,
+  IonTitle
 } from '@ionic/react';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
+import { camera } from 'ionicons/icons';
+
+interface Photo {
+  id: number;
+  dataUrl: string;
+  timestamp: string;
+}
 
 const CameraPage: React.FC = () => {
-  const [photo, setPhoto] = useState<string>('');
+  const [photos, setPhotos] = useState<Photo[]>([]);
 
   useEffect(() => {
-    // Load last photo from localStorage on component mount
-    const photos = JSON.parse(localStorage.getItem('photos') || '[]');
-    if (photos.length > 0) {
-      setPhoto(photos[photos.length - 1].dataUrl);
-    }
+    // Load photos from localStorage on component mount
+    const savedPhotos = JSON.parse(localStorage.getItem('photos') || '[]');
+    setPhotos(savedPhotos);
   }, []);
 
   const takePicture = async () => {
     try {
       const image = await Camera.getPhoto({
         quality: 90,
-        allowEditing: false,
+        allowEditing: true,
         resultType: CameraResultType.DataUrl,
         source: CameraSource.Camera
       });
 
-      setPhoto(image.dataUrl || '');
-      
-      // Save to localStorage
-      const photos = JSON.parse(localStorage.getItem('photos') || '[]');
-      photos.push({
-        id: Date.now(),
-        dataUrl: image.dataUrl,
-        timestamp: new Date().toISOString()
-      });
-      localStorage.setItem('photos', JSON.stringify(photos));
+      if (image.dataUrl) {
+        const newPhoto = {
+          id: Date.now(),
+          dataUrl: image.dataUrl,
+          timestamp: new Date().toISOString()
+        };
+
+        const updatedPhotos = [...photos, newPhoto];
+        setPhotos(updatedPhotos);
+        localStorage.setItem('photos', JSON.stringify(updatedPhotos));
+      }
     } catch (error) {
       console.error('Camera error:', error);
     }
@@ -56,33 +62,44 @@ const CameraPage: React.FC = () => {
     <IonPage>
       <IonHeader>
         <IonToolbar>
-          <IonButtons slot="start">
-            <IonMenuButton />
-          </IonButtons>
-          <IonTitle>Camera</IonTitle>
+          <IonTitle>My Photos</IonTitle>
         </IonToolbar>
       </IonHeader>
 
-      <IonContent className="ion-padding">
+      <IonContent>
         <IonGrid>
           <IonRow>
-            <IonCol size="6">
-              <IonButton expand="block" onClick={takePicture}>
-                Take Photo
-              </IonButton>
-            </IonCol>
-            <IonCol size="6">
-              {photo && (
+            {photos.map((photo) => (
+              <IonCol size="6" sizeMd="4" sizeLg="3" key={photo.id}>
                 <IonCard>
-                  <IonCardContent>
-                    <IonImg src={photo} alt="Captured photo" />
+                  <IonCardContent className="ion-no-padding">
+                    <IonImg 
+                      src={photo.dataUrl} 
+                      alt={`Photo taken at ${new Date(photo.timestamp).toLocaleString()}`}
+                      style={{ width: '100%', height: '200px', objectFit: 'cover' }}
+                    />
                   </IonCardContent>
                 </IonCard>
-              )}
-            </IonCol>
+              </IonCol>
+            ))}
           </IonRow>
         </IonGrid>
       </IonContent>
+
+      <IonFooter>
+        <IonToolbar>
+          <IonButton 
+            expand="block" 
+            onClick={takePicture}
+            className="ion-margin"
+            color="primary"
+            size="large"
+          >
+            <IonIcon icon={camera} slot="start" />
+            Take Photo
+          </IonButton>
+        </IonToolbar>
+      </IonFooter>
     </IonPage>
   );
 };

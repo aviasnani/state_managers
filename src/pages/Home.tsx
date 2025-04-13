@@ -18,7 +18,10 @@ import {
   IonRefresher,
   IonRefresherContent,
   RefresherEventDetail,
+  IonButton,
+  IonIcon,
 } from '@ionic/react';
+import { refresh } from 'ionicons/icons';
 import './Home.css';
 
 interface Photo {
@@ -51,6 +54,10 @@ const Home: React.FC = () => {
     event.detail.complete();
   };
 
+  const handleManualRefresh = () => {
+    loadPhotos();
+  };
+
   return (
     
     <IonPage>
@@ -60,6 +67,11 @@ const Home: React.FC = () => {
             <IonMenuButton />
           </IonButtons>
           <IonTitle>Photo Feed</IonTitle>
+          <IonButtons slot="end">
+            <IonButton onClick={handleManualRefresh}>
+              <IonIcon icon={refresh} />
+            </IonButton>
+          </IonButtons>
         </IonToolbar>
       </IonHeader>
 

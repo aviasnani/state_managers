@@ -12,10 +12,16 @@ import {
   IonAlert,
   IonModal,
   IonSpinner,
+  IonGrid,
+  IonRow,
+  IonCol,
+  IonCard,
+  IonCardContent,
+  useIonToast,
 } from '@ionic/react';
 import { Camera, CameraResultType, CameraSource, CameraDirection } from '@capacitor/camera';
 import { Capacitor } from '@capacitor/core';
-import { camera } from 'ionicons/icons';
+import { camera, images } from 'ionicons/icons';
 import './Camera.css';
 
 const CameraPage: React.FC = () => {
@@ -25,6 +31,7 @@ const CameraPage: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const [presentToast] = useIonToast();
 
   useEffect(() => {
     // Only request camera permissions on native platforms
@@ -32,6 +39,17 @@ const CameraPage: React.FC = () => {
       requestCameraPermission();
     }
   }, []);
+
+  useEffect(() => {
+    if (showCamera) {
+      // Delay to let the modal and video element render
+      const timeout = setTimeout(() => {
+        startWebCamera();
+      }, 300); // You can tweak the delay if needed
+  
+      return () => clearTimeout(timeout);
+    }
+  }, [showCamera]);
 
   useEffect(() => {
     // Cleanup function to stop the camera stream when component unmounts
@@ -93,8 +111,14 @@ const CameraPage: React.FC = () => {
       console.log('Got stream:', stream);
 
       if (!videoRef.current) {
-        throw new Error('Video element not found');
+        console.warn('Video element not ready yet');
+        return;
       }
+
+      videoRef.current.setAttribute('autoplay', '');
+      videoRef.current.setAttribute('playsinline', '');
+      videoRef.current.setAttribute('muted', '');
+      videoRef.current.muted = true;
 
       videoRef.current.srcObject = stream;
       streamRef.current = stream;
@@ -105,34 +129,35 @@ const CameraPage: React.FC = () => {
       console.log('Waiting for video to load...');
       // Wait for video to be ready
       await new Promise<void>((resolve, reject) => {
-        if (!videoRef.current) {
-          reject(new Error('Video element not found'));
-          return;
-        }
-
-        videoRef.current.onloadedmetadata = () => {
-          console.log('Video metadata loaded');
-          videoRef.current?.play()
+        if (!videoRef.current) return;
+        const handleVideoReady = () => {
+          if(videoRef.current) {
+            videoRef.current.play()
             .then(() => {
               console.log('Video playback started');
+              setIsLoading(false);
               resolve();
             })
+
             .catch(error => {
               console.error('Video playback failed:', error);
-              reject(error);
+              setIsLoading(false);
             });
-        };
+          
+        }
+      };
+        
 
         // Add timeout to prevent hanging
         setTimeout(() => {
           reject(new Error('Video loading timed out'));
         }, 10000);
       });
-
+    
     } catch (error) {
       console.error('Web camera error:', error);
       setError('Failed to access camera. Please make sure camera permissions are granted.');
-      setShowCamera(false);
+      //setShowCamera(false);
     } finally {
       setIsLoading(false);
     }
@@ -181,44 +206,30 @@ const CameraPage: React.FC = () => {
     }
   };
 
-  const takePicture = async () => {
-    if (!Capacitor.isNativePlatform()) {
-      // For web platform, start the camera
-      await startWebCamera();
-      return;
-    }
-
+  const handlePhotoCapture = async (source: CameraSource) => {
     try {
-      const image = await Camera.getPhoto({
-        quality: 90,
-        allowEditing: false,
-        resultType: CameraResultType.DataUrl,
-        source: CameraSource.Camera,
-        direction: CameraDirection.Rear,
-        saveToGallery: true,
-      });
-
-      if (image.dataUrl) {
-        // Get current user
-        const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-        
-        const newPhoto = {
-          id: Date.now(),
-          dataUrl: image.dataUrl,
-          timestamp: new Date().toISOString(),
-          userId: currentUser.id
-        };
-
-        // Get existing photos from localStorage
-        const existingPhotos = JSON.parse(localStorage.getItem('photos') || '[]');
-        // Add new photo to the beginning of the array
-        const updatedPhotos = [newPhoto, ...existingPhotos];
-        // Save back to localStorage
-        localStorage.setItem('photos', JSON.stringify(updatedPhotos));
+      console.log('Platform:', Capacitor.getPlatform());
+  
+      if (Capacitor.getPlatform() === 'web') {
+        console.log('Requesting camera permission via getUserMedia...');
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        stream.getTracks().forEach(track => track.stop());
+        console.log('Camera permission granted via getUserMedia');
+      } else {
+        const permissions = await Camera.checkPermissions();
+        if (permissions.camera !== 'granted') {
+          const result = await Camera.requestPermissions();
+          if (result.camera !== 'granted') {
+            throw new Error('Camera permission not granted');
+          }
+        }
       }
-    } catch (error) {
-      console.error('Camera error:', error);
-      setError('Failed to take photo. Please make sure camera permissions are granted.');
+  
+      // 👇 JUST OPEN THE MODAL, DO NOT CALL startWebCamera() HERE
+      setShowCamera(true);
+    } catch (err) {
+      console.error('Permission error:', err);
+      setError('Camera permission is required to take photos.');
     }
   };
 
@@ -234,22 +245,44 @@ const CameraPage: React.FC = () => {
         </IonToolbar>
       </IonHeader>
 
-      <IonContent className="camera-content">
-        <div className="camera-container">
-          <IonButton 
-            onClick={takePicture}
-            size="large"
-            className="camera-button"
-            disabled={isLoading}
-          >
-            {isLoading ? <IonSpinner name="crescent" /> : (
-              <>
-                <IonIcon icon={camera} slot="start" />
-                Take Photo
-              </>
-            )}
-          </IonButton>
-        </div>
+      <IonContent className="ion-padding">
+        <IonGrid>
+          <IonRow>
+            <IonCol size="12" sizeMd="8" offsetMd="2">
+              <IonCard>
+                <IonCardContent>
+                  <IonGrid>
+                    <IonRow>
+                      <IonCol size="12" sizeMd="6">
+                        <IonButton 
+                          expand="block" 
+                          size="large"
+                          onClick={() => handlePhotoCapture(CameraSource.Camera)}
+                          className="camera-button"
+                        >
+                          <IonIcon icon={camera} slot="start" />
+                          Take Photo
+                        </IonButton>
+                      </IonCol>
+                      <IonCol size="12" sizeMd="6">
+                        <IonButton 
+                          expand="block" 
+                          size="large"
+                          onClick={() => handlePhotoCapture(CameraSource.Photos)}
+                          className="import-button"
+                          color="secondary"
+                        >
+                          <IonIcon icon={images} slot="start" />
+                          Import Photo
+                        </IonButton>
+                      </IonCol>
+                    </IonRow>
+                  </IonGrid>
+                </IonCardContent>
+              </IonCard>
+            </IonCol>
+          </IonRow>
+        </IonGrid>
 
         <IonModal 
           isOpen={showCamera} 
@@ -295,17 +328,20 @@ const CameraPage: React.FC = () => {
                 </div>
               )}
               <video 
-                ref={videoRef}
-                autoPlay 
-                playsInline
-                muted
-                style={{ 
-                  width: '100%', 
-                  height: '100%', 
-                  objectFit: 'contain',
-                  display: isLoading ? 'none' : 'block'
-                }}
-              />
+  ref={el => {
+    console.log('Video ref set:', el);
+    videoRef.current = el;
+  }}
+  autoPlay 
+  playsInline
+  muted
+  style={{ 
+    width: '100%', 
+    height: '100%', 
+    objectFit: 'contain',
+    display: isLoading ? 'none' : 'block'
+  }}
+/>
               <canvas ref={canvasRef} style={{ display: 'none' }} />
               {!isLoading && (
                 <IonButton

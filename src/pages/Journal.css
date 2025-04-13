@@ -14,7 +14,8 @@ ion-card {
 }
 
 /* Form Input Styling */
-ion-input, ion-textarea {
+ion-input,
+ion-textarea {
   margin: 8px 0;
   --background: #f5f5f5;
   --padding-start: 12px;

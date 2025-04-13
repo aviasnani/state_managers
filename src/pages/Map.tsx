@@ -124,6 +124,7 @@ const Map: React.FC = () => {
           <IonCardContent>
             <IonInput
               value={apiKey}
+              type="password"
               onIonChange={(e) => setApiKey(e.detail.value!)}
               placeholder="Enter Google Maps API Key"
               className="api-key-input"

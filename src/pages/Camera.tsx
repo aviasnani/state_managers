@@ -1,59 +1,3 @@
-<<<<<<< HEAD
-import React, { useState, useEffect } from 'react';
-import { 
-  IonButtons, 
-  IonContent, 
-  IonHeader, 
-  IonMenuButton, 
-  IonPage, 
-  IonTitle, 
-  IonToolbar,
-  IonButton,
-  IonGrid,
-  IonRow,
-  IonCol,
-  IonImg,
-  IonCard,
-  IonCardContent
-} from '@ionic/react';
-import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
-
-const CameraPage: React.FC = () => {
-  const [photo, setPhoto] = useState<string>('');
-
-  useEffect(() => {
-    // Load last photo from localStorage on component mount
-    const photos = JSON.parse(localStorage.getItem('photos') || '[]');
-    if (photos.length > 0) {
-      setPhoto(photos[photos.length - 1].dataUrl);
-    }
-  }, []);
-
-  const takePicture = async () => {
-    try {
-      const image = await Camera.getPhoto({
-        quality: 90,
-        allowEditing: false,
-        resultType: CameraResultType.DataUrl,
-        source: CameraSource.Camera
-      });
-
-      setPhoto(image.dataUrl || '');
-      
-      // Save to localStorage
-      const photos = JSON.parse(localStorage.getItem('photos') || '[]');
-      photos.push({
-        id: Date.now(),
-        dataUrl: image.dataUrl,
-        timestamp: new Date().toISOString()
-      });
-      localStorage.setItem('photos', JSON.stringify(photos));
-    } catch (error) {
-      console.error('Camera error:', error);
-    }
-  };
-
-=======
 import React, { useEffect, useRef } from 'react';
 import { 
   IonContent, 
@@ -108,9 +52,16 @@ const CameraPage: React.FC = () => {
 
   const requestCameraPermission = async () => {
     try {
-      const permission = await Camera.checkPermissions();
-      if (permission.camera !== 'granted') {
-        await Camera.requestPermissions();
+      // For web browsers, explicitly request permission
+      if (!Capacitor.isNativePlatform()) {
+        const result = await navigator.mediaDevices.getUserMedia({ video: true });
+        // Stop this test stream immediately
+        result.getTracks().forEach(track => track.stop());
+      } else {
+        const permission = await Camera.checkPermissions();
+        if (permission.camera !== 'granted') {
+          await Camera.requestPermissions();
+        }
       }
     } catch (err) {
       console.error('Permission error:', err);
@@ -271,7 +222,7 @@ const CameraPage: React.FC = () => {
     }
   };
 
->>>>>>> ea2334a581d62cb6be2c1a06ec3a30cfcbd33810
+
   return (
     <IonPage>
       <IonHeader>
@@ -283,27 +234,6 @@ const CameraPage: React.FC = () => {
         </IonToolbar>
       </IonHeader>
 
-<<<<<<< HEAD
-      <IonContent className="ion-padding">
-        <IonGrid>
-          <IonRow>
-            <IonCol size="6">
-              <IonButton expand="block" onClick={takePicture}>
-                Take Photo
-              </IonButton>
-            </IonCol>
-            <IonCol size="6">
-              {photo && (
-                <IonCard>
-                  <IonCardContent>
-                    <IonImg src={photo} alt="Captured photo" />
-                  </IonCardContent>
-                </IonCard>
-              )}
-            </IonCol>
-          </IonRow>
-        </IonGrid>
-=======
       <IonContent className="camera-content">
         <div className="camera-container">
           <IonButton 
@@ -401,14 +331,9 @@ const CameraPage: React.FC = () => {
           message={error || ""}
           buttons={['OK']}
         />
->>>>>>> ea2334a581d62cb6be2c1a06ec3a30cfcbd33810
       </IonContent>
     </IonPage>
   );
 };
 
-<<<<<<< HEAD
 export default CameraPage;
-=======
-export default CameraPage;
->>>>>>> ea2334a581d62cb6be2c1a06ec3a30cfcbd33810

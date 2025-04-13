@@ -9,4 +9,35 @@ ion-img {
     margin: 20px 0;
     border-radius: 8px;
     overflow: hidden;
+<<<<<<< HEAD
   }
+=======
+  }
+
+.camera-content {
+  --background: #f4f5f8;
+}
+
+.camera-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+.camera-button {
+  --background: #2196f3;
+  --background-hover: #1976d2;
+  --background-activated: #1976d2;
+  --border-radius: 50%;
+  width: 120px;
+  height: 120px;
+  --padding-start: 0;
+  --padding-end: 0;
+}
+
+.camera-button ion-icon {
+  font-size: 48px;
+  margin: 0;
+}
+>>>>>>> ea2334a581d62cb6be2c1a06ec3a30cfcbd33810

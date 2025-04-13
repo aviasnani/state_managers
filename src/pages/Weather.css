@@ -1,0 +1,121 @@
+.weather-card {
+  margin: 16px;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.weather-info {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.weather-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.weather-header h2 {
+  margin: 8px 0 4px 0;
+  font-size: 24px;
+  color: #333;
+}
+
+.location-details {
+  margin: 0;
+  color: #666;
+  font-size: 16px;
+}
+
+.weather-icon {
+  font-size: 64px;
+  color: #ff9800;
+  margin-bottom: 8px;
+}
+
+.temperature {
+  font-size: 48px;
+  font-weight: bold;
+  color: #333;
+  margin: 16px 0 4px 0;
+}
+
+.feels-like {
+  font-size: 16px;
+  color: #666;
+  margin-bottom: 16px;
+}
+
+.description {
+  font-size: 18px;
+  color: #666;
+  text-transform: capitalize;
+  margin-bottom: 16px;
+}
+
+.additional-info {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+  padding: 16px;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #555;
+  padding: 8px;
+  background-color: white;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.info-item ion-icon {
+  color: #2196f3;
+  font-size: 20px;
+}
+
+.api-key-input,
+.location-input {
+  margin-bottom: 16px;
+  --background: #f5f5f5;
+  --padding-start: 12px;
+  --padding-end: 12px;
+  border-radius: 8px;
+}
+
+.search-button {
+  margin-top: 16px;
+  --background: #2196f3;
+  --background-hover: #1976d2;
+  --background-activated: #1976d2;
+  font-weight: 500;
+}
+
+.weather-card ion-card-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #eee;
+}
+
+.weather-card ion-card-title {
+  color: #333;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+@media (min-width: 768px) {
+  .additional-info {
+    flex-direction: row;
+    justify-content: space-around;
+  }
+
+  .info-item {
+    flex: 1;
+    justify-content: center;
+  }
+} 

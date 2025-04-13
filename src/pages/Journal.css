@@ -1,0 +1,38 @@
+/* Journal Entry Card Styling */
+ion-card {
+  margin: 16px 0;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Date Styling */
+.date {
+  color: #666;
+  font-size: 0.9em;
+  margin-top: 8px;
+  font-style: italic;
+}
+
+/* Form Input Styling */
+ion-input, ion-textarea {
+  margin: 8px 0;
+  --background: #f5f5f5;
+  --padding-start: 12px;
+  --padding-end: 12px;
+  border-radius: 4px;
+}
+
+/* Button Spacing */
+ion-button {
+  margin: 8px 0;
+}
+
+/* Card Content Spacing */
+ion-card-content {
+  padding: 16px;
+}
+
+/* Delete Button Styling */
+ion-button[color="danger"] {
+  margin-top: 12px;
+}

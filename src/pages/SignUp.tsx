@@ -13,11 +13,33 @@ const SignUp: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
       e.preventDefault();
+
+      const existingUser = localStorage.getItem('user');
+      if (existingUser) {
+          const user = JSON.parse(existingUser);
+          if (user.username === username) {
+              alert('Username already exists!');
+              return;
+          }
+      }
+      if(existingUser) {
+          const e_mail = JSON.parse(existingUser);
+          if (e_mail.email === email) {
+              alert('Email already exists!');
+              return;
+          }
+      }
+      if(password.length < 6) {
+          alert('Password must be at least 6 characters long!');
+          return;
+      }
       const user = { name, email, username, password };
       localStorage.setItem('user', JSON.stringify(user));
-
       alert('User registered successfully!');
+      history.push('/login');
       window.location.href = '/login';
+      
+      
   };
   return (
     <IonPage>

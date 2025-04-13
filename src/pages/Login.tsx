@@ -23,6 +23,13 @@ import '@ionic/react/css/typography.css';
 import '@ionic/react/css/padding.css';
 import './Login.css';
 
+import '@ionic/react/css/core.css';
+import '@ionic/react/css/normalize.css';
+import '@ionic/react/css/structure.css';
+import '@ionic/react/css/typography.css';
+import '@ionic/react/css/padding.css';
+import './Login.css';
+
 const Login: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -74,7 +81,50 @@ const Login: React.FC = () => {
                         required
                       />
                     </IonItem>
+  return (
+    <IonPage>
+      <IonContent className="ion-padding">
+        <IonGrid>
+          <IonRow className="ion-justify-content-center ion-align-items-center" style={{ height: '100vh' }}>
+            <IonCol size="12" sizeMd="8" sizeLg="6" sizeXl="4">
+              <IonCard>
+                <IonCardHeader>
+                  <IonCardTitle className="ion-text-center">SpotImage Login</IonCardTitle>
+                </IonCardHeader>
+                <IonCardContent>
+                  <form onSubmit={handleSubmit}>
+                    <IonItem>
+                      <IonLabel position="floating">Username</IonLabel>
+                      <IonInput
+                        type="text"
+                        value={username}
+                        onIonChange={e => setUsername(e.detail.value!)}
+                        required
+                      />
+                    </IonItem>
 
+                    <IonItem className="ion-margin-bottom">
+                      <IonLabel position="floating">Password</IonLabel>
+                      <IonInput
+                        type="password"
+                        value={password}
+                        onIonChange={e => setPassword(e.detail.value!)}
+                        required
+                      />
+                    </IonItem>
+
+                    <IonButton expand="block" type="submit" className="ion-margin-top">
+                      Login
+                    </IonButton>
+                  </form>
+                </IonCardContent>
+              </IonCard>
+            </IonCol>
+          </IonRow>
+        </IonGrid>
+      </IonContent>
+    </IonPage>
+  );
                     <IonButton expand="block" type="submit" className="ion-margin-top">
                       Login
                     </IonButton>

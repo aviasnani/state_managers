@@ -17,6 +17,9 @@ import {
   IonAlert,
   IonItem,
   IonLabel,
+  IonSelect,
+  IonSelectOption,
+  IonToggle,
 } from "@ionic/react";
 import "./Map.css";
 
@@ -25,6 +28,22 @@ const DEFAULT_COORDINATES = {
   lat: 53.3498,
   lng: -6.2603
 };
+
+// Map type options
+const MAP_TYPES = [
+  { value: 'roadmap', label: 'Road Map' },
+  { value: 'satellite', label: 'Satellite' },
+  { value: 'hybrid', label: 'Hybrid' },
+  { value: 'terrain', label: 'Terrain' }
+];
+
+// Map style options
+const MAP_STYLES = [
+  { value: 'default', label: 'Default' },
+  { value: 'night', label: 'Night Mode' },
+  { value: 'retro', label: 'Retro' },
+  { value: 'grayscale', label: 'Grayscale' }
+];
 
 const Map: React.FC = () => {
   const [apiKey, setApiKey] = useState<string>("");
@@ -35,13 +54,19 @@ const Map: React.FC = () => {
   const [searchLocation, setSearchLocation] = useState<string>("");
   const [marker, setMarker] = useState<google.maps.Marker | null>(null);
   const [geocoder, setGeocoder] = useState<google.maps.Geocoder | null>(null);
+  
+  // New state variables for settings
+  const [mapType, setMapType] = useState<string>('roadmap');
+  const [zoomLevel, setZoomLevel] = useState<number>(12);
+  const [mapStyle, setMapStyle] = useState<string>('default');
+  const [showTraffic, setShowTraffic] = useState<boolean>(false);
+  const [showSettings, setShowSettings] = useState<boolean>(false);
 
   // Function to load the Google Maps script dynamically
   const loadGoogleMapsScript = (key: string) => {
     setLoading(true);
     setError(null);
     
-    // Remove any existing script
     const existingScript = document.querySelector('script[src*="maps.googleapis.com"]');
     if (existingScript) {
       existingScript.remove();
@@ -76,6 +101,57 @@ const Map: React.FC = () => {
     }
   };
 
+  // Apply map settings
+  const applyMapSettings = () => {
+    if (!map) return;
+
+    // Set map type
+    map.setMapTypeId(mapType as google.maps.MapTypeId);
+
+    // Set zoom level
+    map.setZoom(zoomLevel);
+
+    // Set traffic layer
+    const trafficLayer = new google.maps.TrafficLayer();
+    if (showTraffic) {
+      trafficLayer.setMap(map);
+    } else {
+      trafficLayer.setMap(null);
+    }
+
+    // Set map style based on selection
+    const styles = getMapStyle(mapStyle);
+    map.setOptions({ styles });
+
+    setShowSettings(false);
+  };
+
+  // Get map style based on selection
+  const getMapStyle = (style: string) => {
+    switch (style) {
+      case 'night':
+        return [
+          { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
+          { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] },
+          { elementType: "labels.text.stroke", stylers: [{ color: "#242f3e" }] }
+        ];
+      case 'retro':
+        return [
+          { elementType: "geometry", stylers: [{ color: "#ebe3cd" }] },
+          { elementType: "labels.text.fill", stylers: [{ color: "#523735" }] },
+          { elementType: "labels.text.stroke", stylers: [{ color: "#f5f1e6" }] }
+        ];
+      case 'grayscale':
+        return [
+          { elementType: "geometry", stylers: [{ saturation: -100 }] },
+          { elementType: "labels.text.fill", stylers: [{ saturation: -100 }] },
+          { elementType: "labels.text.stroke", stylers: [{ saturation: -100 }] }
+        ];
+      default:
+        return [];
+    }
+  };
+
   // Initialize Google Maps when script is loaded
   useEffect(() => {
     if (mapLoaded && window.google && !map) {
@@ -88,13 +164,14 @@ const Map: React.FC = () => {
 
         const newMap = new window.google.maps.Map(mapElement, {
           center: DEFAULT_COORDINATES,
-          zoom: 12,
+          zoom: zoomLevel,
+          mapTypeId: mapType as google.maps.MapTypeId,
           mapTypeControl: true,
           streetViewControl: true,
           fullscreenControl: true,
+          styles: getMapStyle(mapStyle)
         });
 
-        // Initialize marker
         const newMarker = new window.google.maps.Marker({
           position: DEFAULT_COORDINATES,
           map: newMap,
@@ -102,7 +179,6 @@ const Map: React.FC = () => {
           animation: google.maps.Animation.DROP,
         });
 
-        // Initialize geocoder
         const newGeocoder = new window.google.maps.Geocoder();
 
         setMap(newMap);
@@ -133,15 +209,12 @@ const Map: React.FC = () => {
       if (status === "OK" && results && results[0]) {
         const location = results[0].geometry.location;
         
-        // Update map center
         map.setCenter(location);
-        map.setZoom(15);
+        map.setZoom(zoomLevel);
 
-        // Update marker position
         marker.setPosition(location);
         marker.setTitle(results[0].formatted_address);
 
-        // Optional: Show an InfoWindow with the address
         const infoWindow = new google.maps.InfoWindow({
           content: `<div><strong>${results[0].formatted_address}</strong></div>`
         });
@@ -150,9 +223,7 @@ const Map: React.FC = () => {
           infoWindow.open(map, marker);
         });
 
-        // Trigger the click event to show the InfoWindow immediately
         google.maps.event.trigger(marker, 'click');
-
       } else {
         setError("Location not found. Please try a different search term.");
       }
@@ -168,6 +239,13 @@ const Map: React.FC = () => {
             <IonMenuButton />
           </IonButtons>
           <IonTitle>Map</IonTitle>
+          {mapLoaded && (
+            <IonButtons slot="end">
+              <IonButton onClick={() => setShowSettings(!showSettings)}>
+                Settings
+              </IonButton>
+            </IonButtons>
+          )}
         </IonToolbar>
       </IonHeader>
 
@@ -195,23 +273,87 @@ const Map: React.FC = () => {
             </IonButton>
 
             {mapLoaded && (
-              <div className="search-container ion-margin-bottom">
-                <IonItem>
-                  <IonLabel position="stacked">Search Location</IonLabel>
-                  <IonInput
-                    value={searchLocation}
-                    onIonChange={(e) => setSearchLocation(e.detail.value!)}
-                    placeholder="Enter location to search"
-                  />
-                </IonItem>
-                <IonButton 
-                  expand="block"
-                  onClick={handleLocationSearch}
-                  className="ion-margin-top"
-                >
-                  Search Location
-                </IonButton>
-              </div>
+              <>
+                <div className="search-container ion-margin-bottom">
+                  <IonItem>
+                    <IonLabel position="stacked">Search Location</IonLabel>
+                    <IonInput
+                      value={searchLocation}
+                      onIonChange={(e) => setSearchLocation(e.detail.value!)}
+                      placeholder="Enter location to search"
+                    />
+                  </IonItem>
+                  <IonButton 
+                    expand="block"
+                    onClick={handleLocationSearch}
+                    className="ion-margin-top"
+                  >
+                    Search Location
+                  </IonButton>
+                </div>
+
+                {showSettings && (
+                  <div className="settings-container ion-margin-bottom">
+                    <IonItem>
+                      <IonLabel>Map Type</IonLabel>
+                      <IonSelect
+                        value={mapType}
+                        onIonChange={(e) => setMapType(e.detail.value)}
+                      >
+                        {MAP_TYPES.map((type) => (
+                          <IonSelectOption key={type.value} value={type.value}>
+                            {type.label}
+                          </IonSelectOption>
+                        ))}
+                      </IonSelect>
+                    </IonItem>
+
+                    <IonItem>
+                      <IonLabel>Zoom Level</IonLabel>
+                      <IonSelect
+                        value={zoomLevel}
+                        onIonChange={(e) => setZoomLevel(e.detail.value)}
+                      >
+                        {[8, 10, 12, 14, 16, 18].map((level) => (
+                          <IonSelectOption key={level} value={level}>
+                            {level}
+                          </IonSelectOption>
+                        ))}
+                      </IonSelect>
+                    </IonItem>
+
+                    <IonItem>
+                      <IonLabel>Map Style</IonLabel>
+                      <IonSelect
+                        value={mapStyle}
+                        onIonChange={(e) => setMapStyle(e.detail.value)}
+                      >
+                        {MAP_STYLES.map((style) => (
+                          <IonSelectOption key={style.value} value={style.value}>
+                            {style.label}
+                          </IonSelectOption>
+                        ))}
+                      </IonSelect>
+                    </IonItem>
+
+                    <IonItem>
+                      <IonLabel>Show Traffic</IonLabel>
+                      <IonToggle
+                        checked={showTraffic}
+                        onIonChange={(e) => setShowTraffic(e.detail.checked)}
+                      />
+                    </IonItem>
+
+                    <IonButton 
+                      expand="block"
+                      onClick={applyMapSettings}
+                      className="ion-margin-top"
+                    >
+                      Apply Settings
+                    </IonButton>
+                  </div>
+                )}
+              </>
             )}
 
             <div id="map" className="map-container"></div>

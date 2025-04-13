@@ -12,10 +12,16 @@ import {
   IonAlert,
   IonModal,
   IonSpinner,
+  IonGrid,
+  IonRow,
+  IonCol,
+  IonCard,
+  IonCardContent,
+  useIonToast,
 } from '@ionic/react';
 import { Camera, CameraResultType, CameraSource, CameraDirection } from '@capacitor/camera';
 import { Capacitor } from '@capacitor/core';
-import { camera } from 'ionicons/icons';
+import { camera, images } from 'ionicons/icons';
 import './Camera.css';
 
 const CameraPage: React.FC = () => {
@@ -25,6 +31,7 @@ const CameraPage: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const [presentToast] = useIonToast();
 
   useEffect(() => {
     // Only request camera permissions on native platforms
@@ -174,25 +181,16 @@ const CameraPage: React.FC = () => {
     }
   };
 
-  const takePicture = async () => {
-    if (!Capacitor.isNativePlatform()) {
-      // For web platform, start the camera
-      await startWebCamera();
-      return;
-    }
-
+  const handlePhotoCapture = async (source: CameraSource) => {
     try {
       const image = await Camera.getPhoto({
         quality: 90,
         allowEditing: false,
         resultType: CameraResultType.DataUrl,
-        source: CameraSource.Camera,
-        direction: CameraDirection.Rear,
-        saveToGallery: true,
+        source: source,
       });
 
       if (image.dataUrl) {
-        // Get current user
         const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
         
         const newPhoto = {
@@ -202,16 +200,29 @@ const CameraPage: React.FC = () => {
           userId: currentUser.id
         };
 
-        // Get existing photos from localStorage
+        // Get existing photos and add new one
         const existingPhotos = JSON.parse(localStorage.getItem('photos') || '[]');
-        // Add new photo to the beginning of the array
         const updatedPhotos = [newPhoto, ...existingPhotos];
-        // Save back to localStorage
         localStorage.setItem('photos', JSON.stringify(updatedPhotos));
+
+        // Dispatch event to update photo feed
+        window.dispatchEvent(new Event('photosUpdated'));
+
+        await presentToast({
+          message: source === CameraSource.Camera ? 'Photo taken successfully!' : 'Photo imported successfully!',
+          duration: 2000,
+          position: 'bottom',
+          color: 'success'
+        });
       }
     } catch (error) {
-      console.error('Camera error:', error);
-      setError('Failed to take photo. Please make sure camera permissions are granted.');
+      console.error('Camera/Import error:', error);
+      presentToast({
+        message: `Failed to ${source === CameraSource.Camera ? 'take' : 'import'} photo`,
+        duration: 2000,
+        position: 'bottom',
+        color: 'danger'
+      });
     }
   };
 
@@ -222,26 +233,48 @@ const CameraPage: React.FC = () => {
           <IonButtons slot="start">
             <IonMenuButton />
           </IonButtons>
-          <IonTitle>Take Photo</IonTitle>
+          <IonTitle>Camera</IonTitle>
         </IonToolbar>
       </IonHeader>
 
-      <IonContent className="camera-content">
-        <div className="camera-container">
-          <IonButton 
-            onClick={takePicture}
-            size="large"
-            className="camera-button"
-            disabled={isLoading}
-          >
-            {isLoading ? <IonSpinner name="crescent" /> : (
-              <>
-                <IonIcon icon={camera} slot="start" />
-                Take Photo
-              </>
-            )}
-          </IonButton>
-        </div>
+      <IonContent className="ion-padding">
+        <IonGrid>
+          <IonRow>
+            <IonCol size="12" sizeMd="8" offsetMd="2">
+              <IonCard>
+                <IonCardContent>
+                  <IonGrid>
+                    <IonRow>
+                      <IonCol size="12" sizeMd="6">
+                        <IonButton 
+                          expand="block" 
+                          size="large"
+                          onClick={() => handlePhotoCapture(CameraSource.Camera)}
+                          className="camera-button"
+                        >
+                          <IonIcon icon={camera} slot="start" />
+                          Take Photo
+                        </IonButton>
+                      </IonCol>
+                      <IonCol size="12" sizeMd="6">
+                        <IonButton 
+                          expand="block" 
+                          size="large"
+                          onClick={() => handlePhotoCapture(CameraSource.Photos)}
+                          className="import-button"
+                          color="secondary"
+                        >
+                          <IonIcon icon={images} slot="start" />
+                          Import Photo
+                        </IonButton>
+                      </IonCol>
+                    </IonRow>
+                  </IonGrid>
+                </IonCardContent>
+              </IonCard>
+            </IonCol>
+          </IonRow>
+        </IonGrid>
 
         <IonModal 
           isOpen={showCamera} 

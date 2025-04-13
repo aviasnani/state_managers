@@ -109,6 +109,16 @@ import {
       }
     };
   
+    const handleMenuClick = (url: string) => {
+      // Force re-render of Photo Feed page when it's clicked
+      if (url === '/tabs/home') {
+        history.push(url);
+        window.dispatchEvent(new Event('photosUpdated'));
+      } else {
+        history.push(url);
+      }
+    };
+  
     return (
       <IonMenu contentId="main" type="overlay">
         <IonContent>
@@ -121,10 +131,10 @@ import {
                 <IonMenuToggle key={index} autoHide={false}>
                   <IonItem 
                     className={location.pathname === appPage.url ? 'selected' : ''} 
-                    routerLink={appPage.url} 
-                    routerDirection="root" 
+                    onClick={() => handleMenuClick(appPage.url)}
                     lines="none" 
                     detail={false}
+                    button
                   >
                     <IonIcon slot="start" icon={appPage.icon} />
                     <IonLabel>{appPage.title}</IonLabel>

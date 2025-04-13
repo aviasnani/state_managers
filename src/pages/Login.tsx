@@ -1,86 +1,139 @@
 import React, { useState } from 'react';
-import { useHistory, useLocation } from 'react-router-dom';
 import {
   IonContent,
   IonPage,
-  IonInput,
-  IonButton,
   IonItem,
   IonLabel,
-  IonCard,
-  IonCardContent,
-  IonGrid,
-  IonRow,
-  IonCol,
-  IonCardHeader,
-  IonCardTitle,
+  IonInput,
+  IonButton,
+  IonIcon,
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  useIonToast,
+  IonText,
 } from '@ionic/react';
-
-import '@ionic/react/css/core.css';
-import '@ionic/react/css/normalize.css';
-import '@ionic/react/css/structure.css';
-import '@ionic/react/css/typography.css';
-import '@ionic/react/css/padding.css';
-import './Login.css';
+import { logInOutline, personCircleOutline } from 'ionicons/icons';
+import { useHistory } from 'react-router-dom';
 
 const Login: React.FC = () => {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [presentToast] = useIonToast();
   const history = useHistory();
-  const location = useLocation();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (username === "aviasnani" && password === "helloWorld") {
+  const handleLogin = async () => {
+    // Basic validation
+    if (!email || !password) {
+      presentToast({
+        message: 'Please fill in all fields',
+        duration: 2000,
+        color: 'warning',
+        position: 'bottom'
+      });
+      return;
+    }
+
+    // Get users from local storage
+    const users = JSON.parse(localStorage.getItem('users') || '[]');
+    const user = users.find((u: any) => u.email === email && u.password === password);
+
+    if (user) {
+      // Set authentication state
       localStorage.setItem('isLoggedIn', 'true');
-      // Force a hard navigation to the home page
-      window.location.href = '/tabs/home';
+      localStorage.setItem('currentUser', JSON.stringify(user));
+
+      await presentToast({
+        message: 'Login successful!',
+        duration: 1000,
+        color: 'success',
+        position: 'bottom'
+      });
+
+      // Navigate and force reload
+      history.push('/tabs/home');
+      setTimeout(() => {
+        window.location.reload();
+      }, 100);
     } else {
-      alert("Invalid credentials");
+      presentToast({
+        message: 'Invalid email or password',
+        duration: 2000,
+        color: 'danger',
+        position: 'bottom'
+      });
     }
   };
 
   return (
     <IonPage>
+      <IonHeader>
+        <IonToolbar>
+          <IonTitle>Login</IonTitle>
+        </IonToolbar>
+      </IonHeader>
+
       <IonContent className="ion-padding">
-        <IonGrid>
-          <IonRow className="ion-justify-content-center ion-align-items-center" style={{ height: '100vh' }}>
-            <IonCol size="12" sizeMd="8" sizeLg="6" sizeXl="4">
-              <IonCard>
-                <IonCardHeader>
-                  <IonCardTitle className="ion-text-center">SpotImage Login</IonCardTitle>
-                </IonCardHeader>
-                <IonCardContent>
-                  <form onSubmit={handleSubmit}>
-                    <IonItem>
-                      <IonLabel position="floating">Username</IonLabel>
-                      <IonInput
-                        type="text"
-                        value={username}
-                        onIonChange={e => setUsername(e.detail.value!)}
-                        required
-                      />
-                    </IonItem>
+        <div style={{ 
+          maxWidth: '400px', 
+          margin: '0 auto', 
+          padding: '20px',
+          textAlign: 'center' 
+        }}>
+          <IonIcon
+            icon={personCircleOutline}
+            style={{
+              fontSize: '70px',
+              color: 'var(--ion-color-primary)'
+            }}
+          />
+          <h2>Welcome Back!</h2>
+          <p>Please sign in to continue</p>
 
-                    <IonItem className="ion-margin-bottom">
-                      <IonLabel position="floating">Password</IonLabel>
-                      <IonInput
-                        type="password"
-                        value={password}
-                        onIonChange={e => setPassword(e.detail.value!)}
-                        required
-                      />
-                    </IonItem>
+          <div style={{ marginTop: '20px' }}>
+            <IonItem>
+              <IonLabel position="floating">Email</IonLabel>
+              <IonInput
+                type="email"
+                value={email}
+                onIonChange={e => setEmail(e.detail.value!)}
+                required
+              />
+            </IonItem>
 
-                    <IonButton expand="block" type="submit" className="ion-margin-top">
-                      Login
-                    </IonButton>
-                  </form>
-                </IonCardContent>
-              </IonCard>
-            </IonCol>
-          </IonRow>
-        </IonGrid>
+            <IonItem style={{ marginTop: '10px' }}>
+              <IonLabel position="floating">Password</IonLabel>
+              <IonInput
+                type="password"
+                value={password}
+                onIonChange={e => setPassword(e.detail.value!)}
+                required
+              />
+            </IonItem>
+
+            <IonButton
+              expand="block"
+              style={{ marginTop: '30px' }}
+              onClick={handleLogin}
+            >
+              <IonIcon icon={logInOutline} slot="start" />
+              Login
+            </IonButton>
+
+            <div style={{ marginTop: '20px' }}>
+              <IonText color="medium">
+                Don't have an account?{' '}
+                <IonText 
+                  color="primary" 
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => history.push('/signup')}
+                >
+                  Sign Up
+                </IonText>
+              </IonText>
+            </div>
+          </div>
+        </div>
       </IonContent>
     </IonPage>
   );

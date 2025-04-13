@@ -1,5 +1,16 @@
 import { Redirect, Route } from 'react-router-dom';
-import { IonApp, IonIcon, IonLabel, IonRouterOutlet, IonSplitPane, IonTabBar, IonTabButton, IonTabs, setupIonicReact } from '@ionic/react';
+import { 
+  IonApp, 
+  IonIcon, 
+  IonLabel, 
+  IonRouterOutlet, 
+  IonSplitPane, 
+  IonTabBar, 
+  IonTabButton, 
+  IonTabs, 
+  setupIonicReact,
+  useIonToast,
+} from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
 import { useEffect, useState } from 'react';
 import Login from './pages/Login';
@@ -7,6 +18,7 @@ import Home from './pages/Home';
 import Camera from './pages/Camera';
 import Journal from './pages/Journal';
 import Map from './pages/Map';
+import Weather from './pages/Weather';
 import Menu from './pages/Menu';
 import SignUp from './pages/SignUp';
 
@@ -14,7 +26,8 @@ import {
   camera,          
   images,          
   journal,         
-  map,   
+  map,
+  cloudy,   
 } from 'ionicons/icons';
 
 /* Core CSS required for Ionic components to work properly */
@@ -33,76 +46,118 @@ import '@ionic/react/css/text-transformation.css';
 import '@ionic/react/css/flex-utils.css';
 import '@ionic/react/css/display.css';
 
-setupIonicReact();
+/* Theme variables */
+import './theme/variables.css';
+
+setupIonicReact({
+  mode: 'ios',
+  swipeBackEnabled: true,
+});
 
 const App: React.FC = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(localStorage.getItem('isLoggedIn') === 'true');
+  const [presentToast] = useIonToast();
 
   useEffect(() => {
     const checkAuth = () => {
-      const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-      setIsAuthenticated(isLoggedIn);
+      setIsAuthenticated(localStorage.getItem('isLoggedIn') === 'true');
     };
 
-    checkAuth();
     window.addEventListener('storage', checkAuth);
     return () => window.removeEventListener('storage', checkAuth);
   }, []);
 
+  const showAuthAlert = (type: 'login' | 'signup') => {
+    presentToast({
+      message: type === 'login' 
+        ? 'You are already logged in. Please logout first to access the login page.'
+        : 'You are already registered and logged in. Please logout first to create a new account.',
+      duration: 1000,
+      position: 'bottom',
+      color: 'warning'
+    });
+    return <Redirect to="/tabs/home" />;
+  };
+
   return (
     <IonApp>
       <IonReactRouter>
-        <IonRouterOutlet>
-          <Route exact path="/login">
-            {isAuthenticated ? <Redirect to="/tabs/home" /> : <Login />}
-          </Route>
-          <Route exact path="/signup" component={SignUp} />
-          
-          <Route path="/tabs">
-            {!isAuthenticated ? <Redirect to="/login" /> : (
-              <IonSplitPane contentId="main">
-                <Menu />
-                <IonRouterOutlet id="main">
-                  <IonTabs>
-                    <IonRouterOutlet>
-                      <Route exact path="/tabs/home" component={Home} />
-                      <Route exact path="/tabs/camera" component={Camera} />
-                      <Route exact path="/tabs/journal" component={Journal} />
-                      <Route exact path="/tabs/map" component={Map} />
-                      <Redirect exact from="/tabs" to="/tabs/home" />
-                    </IonRouterOutlet>
+        <IonSplitPane contentId="main" when="md">
+          {isAuthenticated && <Menu />}
+          <IonRouterOutlet id="main">
+            {/* Auth Routes */}
+            <Route exact path="/login">
+              {isAuthenticated ? showAuthAlert('login') : <Login />}
+            </Route>
+            <Route exact path="/signup">
+              {isAuthenticated ? showAuthAlert('signup') : <SignUp />}
+            </Route>
 
-                    <IonTabBar slot="bottom">
-                      <IonTabButton tab="home" href="/tabs/home">
-                        <IonIcon icon={images} />
-                        <IonLabel>Feed</IonLabel>
-                      </IonTabButton>
-                      
-                      <IonTabButton tab="camera" href="/tabs/camera">
-                        <IonIcon icon={camera} />
-                        <IonLabel>Camera</IonLabel>
-                      </IonTabButton>
+            {/* Protected Routes */}
+            <Route path="/tabs" render={() => {
+              if (!isAuthenticated) {
+                return <Redirect to="/login" />;
+              }
 
-                      <IonTabButton tab="journal" href="/tabs/journal">
-                        <IonIcon icon={journal} />
-                        <IonLabel>Journal</IonLabel>
-                      </IonTabButton>
+              return (
+                <IonTabs>
+                  <IonRouterOutlet>
+                    <Route exact path="/tabs/home">
+                      <Home />
+                    </Route>
+                    <Route exact path="/tabs/camera">
+                      <Camera />
+                    </Route>
+                    <Route exact path="/tabs/journal">
+                      <Journal />
+                    </Route>
+                    <Route exact path="/tabs/map">
+                      <Map />
+                    </Route>
+                    <Route exact path="/tabs/weather">
+                      <Weather />
+                    </Route>
+                    <Route exact path="/tabs">
+                      <Redirect to="/tabs/home" />
+                    </Route>
+                  </IonRouterOutlet>
 
-                      <IonTabButton tab="map" href="/tabs/map">
-                        <IonIcon icon={map} />
-                        <IonLabel>Map</IonLabel>
-                      </IonTabButton>
-                    </IonTabBar>
-                  </IonTabs>
-                </IonRouterOutlet>
-              </IonSplitPane>
-            )}
-          </Route>
+                  <IonTabBar slot="bottom">
+                    <IonTabButton tab="home" href="/tabs/home">
+                      <IonIcon icon={images} />
+                      <IonLabel>Feed</IonLabel>
+                    </IonTabButton>
+                    
+                    <IonTabButton tab="camera" href="/tabs/camera">
+                      <IonIcon icon={camera} />
+                      <IonLabel>Camera</IonLabel>
+                    </IonTabButton>
 
-          <Route exact path="/">
-            <Redirect to={isAuthenticated ? "/tabs/home" : "/login"} />
-          </Route>
-        </IonRouterOutlet>
+                    <IonTabButton tab="journal" href="/tabs/journal">
+                      <IonIcon icon={journal} />
+                      <IonLabel>Journal</IonLabel>
+                    </IonTabButton>
+
+                    <IonTabButton tab="map" href="/tabs/map">
+                      <IonIcon icon={map} />
+                      <IonLabel>Map</IonLabel>
+                    </IonTabButton>
+
+                    <IonTabButton tab="weather" href="/tabs/weather">
+                      <IonIcon icon={cloudy} />
+                      <IonLabel>Weather</IonLabel>
+                    </IonTabButton>
+                  </IonTabBar>
+                </IonTabs>
+              );
+            }} />
+
+            {/* Default Route */}
+            <Route exact path="/">
+              <Redirect to={isAuthenticated ? "/tabs/home" : "/login"} />
+            </Route>
+          </IonRouterOutlet>
+        </IonSplitPane>
       </IonReactRouter>
     </IonApp>
   );

@@ -46,7 +46,6 @@ const MAP_STYLES = [
 ];
 
 const Map: React.FC = () => {
-  const [apiKey, setApiKey] = useState<string>("");
   const [mapLoaded, setMapLoaded] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -73,7 +72,7 @@ const Map: React.FC = () => {
     }
 
     const script = document.createElement("script");
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${key}&libraries=places`;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyBTuRTR5HzMKkqle1wpGl_p6GDYdTP6gv4&libraries=places`;
     script.async = true;
     script.defer = true;
     
@@ -93,12 +92,7 @@ const Map: React.FC = () => {
   };
 
   const handleSubmit = () => {
-    if (apiKey) {
-      console.log("Submitting API key:", apiKey);
-      loadGoogleMapsScript(apiKey);
-    } else {
-      setError("Please enter a valid API Key");
-    }
+    loadGoogleMapsScript("undefined");
   };
 
   // Apply map settings
@@ -166,8 +160,8 @@ const Map: React.FC = () => {
           center: DEFAULT_COORDINATES,
           zoom: zoomLevel,
           mapTypeId: mapType as google.maps.MapTypeId,
-          mapTypeControl: true,
-          streetViewControl: true,
+          mapTypeControl: false,
+          streetViewControl: false,
           fullscreenControl: true,
           styles: getMapStyle(mapStyle)
         });
@@ -255,15 +249,6 @@ const Map: React.FC = () => {
             <IonCardTitle>Location Map</IonCardTitle>
           </IonCardHeader>
           <IonCardContent>
-            <IonItem className="ion-margin-bottom">
-              <IonLabel position="stacked">Google Maps API Key</IonLabel>
-              <IonInput
-                value={apiKey}
-                onIonChange={(e) => setApiKey(e.detail.value!)}
-                placeholder="Enter Google Maps API Key"
-                className="api-key-input"
-              />
-            </IonItem>
             <IonButton 
               onClick={handleSubmit} 
               expand="block"

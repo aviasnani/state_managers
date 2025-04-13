@@ -103,7 +103,7 @@ const CameraPage: React.FC = () => {
           height: { ideal: 720 },
           facingMode: 'environment'
         },
-        audio: false
+        audio: true
       };
 
       console.log('Constraints:', constraints);
@@ -156,7 +156,6 @@ const CameraPage: React.FC = () => {
     
     } catch (error) {
       console.error('Web camera error:', error);
-      setError('Failed to access camera. Please make sure camera permissions are granted.');
       //setShowCamera(false);
     } finally {
       setIsLoading(false);
@@ -225,7 +224,7 @@ const CameraPage: React.FC = () => {
         }
       }
   
-      // 👇 JUST OPEN THE MODAL, DO NOT CALL startWebCamera() HERE
+      // JUST OPEN THE MODAL, DO NOT CALL startWebCamera() HERE
       setShowCamera(true);
     } catch (err) {
       console.error('Permission error:', err);
@@ -262,18 +261,6 @@ const CameraPage: React.FC = () => {
                         >
                           <IonIcon icon={camera} slot="start" />
                           Take Photo
-                        </IonButton>
-                      </IonCol>
-                      <IonCol size="12" sizeMd="6">
-                        <IonButton 
-                          expand="block" 
-                          size="large"
-                          onClick={() => handlePhotoCapture(CameraSource.Photos)}
-                          className="import-button"
-                          color="secondary"
-                        >
-                          <IonIcon icon={images} slot="start" />
-                          Import Photo
                         </IonButton>
                       </IonCol>
                     </IonRow>
